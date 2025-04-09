@@ -1,1 +1,1 @@
-Creating Sigma Rules for Malware Samples
+Creating Sigma Rules for Malware Samples and CVEs
