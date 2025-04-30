@@ -1,0 +1,30 @@
+title: Suspicious RPC Backdoor Activity with Base64 Encoding
+id: 6c78c1fa-28f1-4897-9b17-09872e1e8c2f
+description: Detects process creation events that use suspicious backdoor RPC functions and Base64 encoding utilities
+status: test
+author: Subhankar H.
+date: 2025/04/29
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection:
+    CommandLine|contains:
+      - "Base64"
+      - "BackdoorChannel_New"
+      - "RpcChannel_Start"
+      - "RpcChannel_SendOneRaw"
+      - "RpcOut_send"
+      - "CryptoHash_Compute"
+  condition: selection
+fields:
+  - CommandLine
+  - Image
+  - ParentImage
+falsepositives:
+  - Software that legitimately uses Base64 or RPC APIs (e.g. PowerShell scripts)
+level: high
+tags:
+  - attack.command_and_control
+  - attack.defense_evasion
+  - attack.t1071
