@@ -1,0 +1,26 @@
+title: Suspicious VBA Macro with Obfuscated Payload Using func_exe
+id: 9c65db82-7c39-4f2b-bb94-0733e97e0622
+status: test
+description: Detects suspicious VBA macros that use TimeSerial and a custom function (e.g., func_exe) to process obfuscated payloads using "@" delimiters, typically indicative of staged malware loaders.
+author: Subhankar H.
+date: 2025/04/29
+references:
+   - https://www.trellix.com/en-in/blogs/research/lumma-stealer-analysis/
+   - https://socprime.com/blog/lumma-stealer-detection/
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection:
+    CommandLine|contains:
+      - "TimeSerial"
+      - "Call func_exe("
+      - "@C@@I@@g"
+      - "@DQ@"
+  condition: selection
+level: high
+tags:
+  - attack.initial_access
+  - attack.t1059.005  # Command and Scripting Interpreter: Visual Basic
+  - malware.loader
+  - macro
