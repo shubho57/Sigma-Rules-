@@ -1,0 +1,44 @@
+title: VanHelsing Ransomware Execution
+id: e3b6f5f5-0171-487a-91e9-vanhelsing
+status: experimental
+description: Detects process execution behaviors associated with VanHelsing ransomware
+author: Subhankar H.
+date: 2025/04/30
+references:
+  - https://www.cyfirma.com/research/vanhelsing-ransomware/
+  - https://www.tripwire.com/state-of-security/vanhelsing-ransomware-what-you-need-know
+  - https://research.checkpoint.com/2025/vanhelsing-new-raas-in-town/
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection:
+    Image|endswith:
+      - '\cmd.exe'
+    CommandLine|contains:
+      - 'psexec'
+      - 'vanlocker.exe'
+      - 'README.txt'
+      - 'Global\VanHelsing'
+      - '---key---'
+      - '---nonce---'
+      - 'TICKET ID ca11d09d4d234ab8c9a9260c0905a421'
+  condition: selection
+fields:
+  - CommandLine
+  - ParentImage
+  - Image
+  - User
+  - Hashes
+  - IntegrityLevel
+  - LogonId
+  - CurrentDirectory
+  - TerminalSessionId
+falsepositives:
+  - Legitimate use of PsExec
+level: high
+tags:
+  - ransomware
+  - vanhelsing
+  - tor
+  - c2
