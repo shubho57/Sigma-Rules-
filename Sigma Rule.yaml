@@ -1,0 +1,37 @@
+title: APT36 Suspicious Execution and Command Usage
+id: fbd53e6f-7a2e-4a6d-89c6-apt36-sigma
+description: Detects potential APT36 activity based on process and command line behavior
+status: test
+author: Subhankar H.
+date: 2025-05-05
+references:
+   - https://research.checkpoint.com/2024/the-evolution-of-transparent-tribes-new-malware/
+   - https://www.cyfirma.com/research/turning-aid-into-attack-exploitation-of-pakistans-youth-laptop-scheme-to-target-india/
+   - https://www.darkreading.com/cyberattacks-data-breaches/apt36-refines-tools-attacks-indian-targets
+
+logsource:
+  category: process_creation
+  product: windows
+
+detection:
+  selection_keywords:
+    CommandLine|contains:
+      - "cmd.exe /c"
+      - "tasklist"
+      - "NetUserEnum"
+      - "cmd /c tasklist"
+  selection_processes:
+    Image|endswith:
+      - "\\cmd.exe"
+      - "\\powershell.exe"
+  selection_network:
+    CommandLine|contains:
+      - "toner-digital.com"
+
+  condition: 1 of selection_keywords or all of selection_processes and selection_network
+level: high
+tags:
+  - APT36
+  - malware
+  - keylogging
+  - C2
