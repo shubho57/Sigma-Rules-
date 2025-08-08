@@ -1,0 +1,47 @@
+title: ThrottleStop.sys Driver vulnerability
+id: aac31e8e-3da4-409a-970f-b29421b678d1
+status: test
+description: ThrottleStop.sys driver, delivered together with the malware, to terminate numerous antivirus processes and lower the system’s defenses as part of a technique known as BYOVD (Bring Your Own Vulnerable Driver). AV killers that rely on various vulnerable drivers are a known problem. We have recently seen an uptick in cyberattacks involving this type of malware.
+references:   
+    - https://securelist.com/av-killer-exploiting-throttlestop-sys/117026/
+author: Subhankar H.
+date: 2025-08-08
+modified: na
+tags:
+   - Discovery, Process Discovery	T1057
+   - Impair Defenses, Disable or Modify Tools	T1562.001
+   - Defense Evasion, Impair Defenses Indicator Blocking	T1562.006
+   - Privilege Escalation,	Create or Modify System Process Windows Service	T1543.003
+   - Impact,	Service Stop	T1489
+
+logsource:
+    product: Antivirus
+    category: Driver explotation
+detection:
+    selection 1:
+        Vulnerable ThrottleBlood.sys driver | Endswith: "82ed942a52cdcf120a8919730e00ba37619661a3"
+
+        Malware observed in the incident | Endswith: 
+            - "f02daf614109f39babdcb6f8841dd6981e929d70 (haz8.exe)"
+            - "c0979ec20b87084317d1bfa50405f7149c3b5c5f (All.exe)"
+
+        Other AV killer variants | Endswith:
+            - "eff7919d5de737d9a64f7528e86e3666051a49aa"
+            - "0a15be464a603b1eebc61744dc60510ce169e135"
+            - "d5a050c73346f01fc9ad767d345ed36c221baac2"
+            - "987834891cea821bcd3ce1f6d3e549282d38b8d3"
+            - "86a2a93a31e0151888c52dbbc8e33a7a3f4357db"
+            - "dcaed7526cda644a23da542d01017d48d97c9533"
+
+    selection 2:
+        Strings | Endswith:
+           - "$shellcode_template = {4? BA 00 00 40 75 00 65 48 8B}""
+           - "ntoskrnl.exe"
+           - "NtAddAtom"
+           - "$ioctl_mem_write = {9C 64 00 80}"
+           - "$ioct ead = {98 64 00 80}"
+
+    condition: selection 1 and selection 2
+falsepositives:
+    - Unknown
+level: High
