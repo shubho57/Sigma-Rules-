@@ -1,0 +1,30 @@
+title: Latrodectus Masquerading as SentinelOne
+id: 69bc12a2-f084-4738-952b-d34cf260f7bd
+status: experimental
+description: Detects the execution of files masquerading as legitimate SentinelOne security software, a technique used by the Latrodectus malware. The malware places its executables in unusual user-specific directories to evade detection.
+references:
+  - https://medium.com/@shubhandrew/analysis-of-latrodectus-variant-msi-installer-966423f32e73
+author: Subhankar H.
+date: 2025-11-19
+tags:
+  - attack.t1036.003
+  - attack.defense_evasion
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection:
+    # Detects specific filenames used by Latrodectus in a common malware staging directory.
+    Image|endswith:
+      - '\SentinelAgentWorker.exe'
+      - '\SentinelAgentCore.dll'
+    Image|contains: '\AppData\Roaming\SentinelOne\'
+  filter_legit:
+    # Excludes legitimate SentinelOne installation paths to reduce false positives.
+    Image|startswith:
+      - 'C:\Program Files\SentinelOne\'
+      - 'C:\Program Files (x86)\SentinelOne\'
+  condition: selection and not filter_legit
+falsepositives:
+  - Legitimate, but non-standard, installations of SentinelOne agent might trigger this rule, although this is unlikely.
+level: high
