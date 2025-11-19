@@ -1,0 +1,37 @@
+title: BQTLock Persistence Mechanisms
+id: 0e89f416-0228-4c0e-8244-c79c82fab261
+status: experimental
+description: Detects persistence techniques used by BQTLock ransomware, including the creation of scheduled tasks with high privileges and the creation of new local user accounts.
+references:
+  - https://medium.com/@shubhandrew/analysis-of-bqtlock-ransomware-2c63a9ecff84
+author: Subhnakar H.
+date: 2025-11-19
+tags:
+  - attack.t1053.005
+  - attack.t1136.002
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection_schtasks:
+    # Detects creation of a scheduled task set to run with the highest privileges.
+    Image|endswith: '\schtasks.exe'
+    CommandLine|contains|all:
+      - '/create'
+      - '/rl'
+      - 'HIGHEST'
+  selection_net:
+    # Detects the use of net.exe to add a new user account.
+    Image|endswith:
+      - '\net.exe'
+      - '\net1.exe'
+    CommandLine|contains|all:
+      - 'user'
+      - '/add'
+  filter_domain:
+    # Excludes commands that explicitly target a domain controller.
+    CommandLine|contains: '/domain'
+  condition: selection_schtasks or (selection_net and not filter_domain)
+falsepositives:
+  - Legitimate administrative scripts or software installations may create scheduled tasks with high privileges or create local user accounts.
+level: medium
