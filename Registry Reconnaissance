@@ -1,0 +1,27 @@
+title: Registry Reconnaissance for Security Software and System Configuration
+id: 0edf588e-1b85-420f-b27e-f29230ceb462
+status: experimental
+description: Detects registry queries to keys containing information about installed software and system locale settings. This behavior is used by malware, as seen in a multi-stage BAT dropper campaign, to perform reconnaissance for security software and system configuration.
+references:
+  - https://medium.com/@shubhandrew/analysis-of-bat-file-dropper-19ea60bd8bb6
+author: Subhankar H.
+date: 2025-11-19
+tags:
+  - attack.t1082
+  - attack.t1518.001
+logsource:
+  category: registry_event
+  product: windows
+detection:
+  selection:
+    TargetObject|endswith:
+      # Key containing a list of installed software, often queried to find security products.
+      - '\Software\Microsoft\Windows\CurrentVersion\Uninstall'
+      # Key related to system locale and code pages, used for system profiling.
+      - '\Control\Nls\CodePage'
+  condition: selection
+falsepositives:
+  - Legitimate software installers, uninstallers, and system inventory tools frequently query the 'Uninstall' key.
+  - Many applications query the 'CodePage' key to determine system language and locale settings.
+  - This rule is likely to be noisy and is best used for threat hunting or correlation with other suspicious events.
+level: low
