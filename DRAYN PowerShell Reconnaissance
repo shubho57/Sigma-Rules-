@@ -1,0 +1,39 @@
+title: DRAYN PowerShell Reconnaissance
+id: 0208f5a0-e1e5-4e69-86e7-bc99bd2fc9b3
+status: experimental
+description: Detects PowerShell commands used by DRAYN malware for system reconnaissance (collecting UUID) and to modify file permissions, indicating malicious activity.
+references:
+  - https://medium.com/@shubhandrew/analysis-of-a-malicious-vs-code-executable-400a1353461a
+author: Subhankar H.
+date: 2025-11-19
+tags:
+  - attack.t1082
+  - attack.t1033
+  - attack.t1222
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection_recon:
+        # Detects PowerShell used to get the system's UUID as seen in DRAYN malware.
+    Image|endswith:
+      - '\powershell.exe'
+      - '\pwsh.exe'
+    CommandLine|contains|all:
+      - 'Get-CimInstance'
+      - 'Win32_ComputerSystem'
+      - '.Product.UUID'
+  selection_perms:
+        # Detects PowerShell used to launch icacls to remove 'Everyone' permissions from an object.
+    Image|endswith:
+      - '\powershell.exe'
+      - '\pwsh.exe'
+    CommandLine|contains|all:
+      - 'icacls'
+      - '/remove:g'
+      - 'S-1-1-0'        # Well-known SID for the 'Everyone' group.
+  condition: 1 of them
+falsepositives:
+    # Legitimate system administration or hardening scripts may use these commands to gather system info or secure files.
+  - Correlation with other suspicious activity is recommended to reduce potential noise from administrative scripts.
+level: high
