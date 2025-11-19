@@ -1,0 +1,41 @@
+title: Latrodectus PowerShell Obfuscation
+id: d87f39a8-95f4-4eef-98e3-c419799e3a97
+status: experimental
+description: Detects PowerShell script execution that employs obfuscation or stealth techniques such as Base64 encoded commands, hidden windows, or insecure execution policy changes, as seen in Latrodectus malware campaigns.
+references:
+  - https://medium.com/@shubhandrew/analysis-of-latrodectus-variant-msi-installer-966423f32e73
+author: Subhankar H.
+date: 2025-11-19
+tags:
+  - attack.t1059.001
+  - attack.t1027
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection_b64:
+    Image|endswith:
+      - '\powershell.exe'
+      - '\pwsh.exe'
+    # Detects the use of Base64 encoding to obfuscate commands, a common malware technique.
+    CommandLine|contains: 'FromBase64String'
+  selection_hidden:
+    Image|endswith:
+      - '\powershell.exe'
+      - '\pwsh.exe'
+    # Detects commands to run PowerShell in a hidden window to evade user detection.
+    CommandLine|contains:
+      - '-w hidden'
+      - '-WindowStyle hidden'
+  selection_policy:
+    Image|endswith:
+      - '\powershell.exe'
+      - '\pwsh.exe'
+    # Detects attempts to bypass the script execution policy, allowing malicious scripts to run.
+    CommandLine|contains|all:
+      - '-ExecutionPolicy'
+      - 'Bypass'
+  condition: 1 of them
+falsepositives:
+  - Legitimate administration scripts, software installers, or automation tools may use these parameters. Consider tuning by filtering for specific parent processes or script paths if noise is high.
+level: medium
