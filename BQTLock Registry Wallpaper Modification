@@ -1,0 +1,22 @@
+title: BQTLock Registry Wallpaper Modification
+id: de475e83-8150-428c-8684-7f150e9dae1c
+status: experimental
+description: Detects modifications to the registry key that controls the desktop wallpaper. This technique is used by BQTLock ransomware to display a ransom note after encrypting files.
+references:
+  - https://medium.com/@shubhandrew/analysis-of-bqtlock-ransomware-2c63a9ecff84
+author: Subhankar H.
+date: 2025-11-19
+tags:
+  - attack.t1490
+logsource:
+  category: registry_set
+  product: windows
+detection:
+  selection:
+    # Detects changes to the registry value that defines the desktop wallpaper path.
+    TargetObject|endswith: '\Control Panel\Desktop\Wallpaper'
+  condition: selection
+falsepositives:
+  - Legitimate users changing their desktop background.
+  - System customization tools or Group Policies that manage desktop wallpapers.
+level: medium
