@@ -1,0 +1,30 @@
+title: DLL Manipulation by CScript
+id: 1de9051d-b60c-4bb0-9bd3-d11fa0d40ff0
+status: experimental
+description: Detects cscript.exe creating or modifying specific system DLLs. This behavior is a strong indicator of DLL hijacking and persistence mechanisms, as seen in a multi-stage BAT dropper campaign.
+references:
+  - https://medium.com/@shubhandrew/analysis-of-bat-file-dropper-19ea60bd8bb6
+author: Subhankar H.
+date: 2025-11-19
+tags:
+  - attack.t1574.001
+  - attack.t1574.002
+  - attack.t1574.006
+logsource:
+  category: file_event
+  product: windows
+detection:
+  selection:
+    # Detects the Windows Script Host as the process initiating the file event.
+    Image|endswith: '\cscript.exe'
+    # Focuses on DLLs created or modified in the System32 directory.
+    TargetFilename|contains: '\System32\'
+    # These specific DLLs were identified in the threat report as being manipulated by the malware.
+    TargetFilename|endswith:
+      - '\vertui.dll'
+      - '\srvcli.dll'
+      - '\netutils.dll'
+  condition: selection
+falsepositives:
+  - This activity is highly anomalous. False positives are unlikely but could potentially stem from legitimate system repair utilities or installers that use the Windows Script Host.
+level: high
