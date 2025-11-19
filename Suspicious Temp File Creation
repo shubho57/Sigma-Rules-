@@ -1,0 +1,27 @@
+title: Suspicious Temp File Creation by BAT Dropper
+id: 482ad958-0ca6-45d9-b505-7daaefd380c2
+status: experimental
+description: Detects the creation of temporary files with specific naming patterns (`~*.x.ps1`, `~*.u.vbs`, `~*.bb.php`) in the user's temporary directory. This behavior is characteristic of a multi-stage BAT file dropper.
+references:
+  - https://medium.com/@shubhandrew/analysis-of-bat-file-dropper-19ea60bd8bb6
+author: Subhankar H.
+date: 2025-11-19
+tags:
+  - attack.t1036.005
+  - attack.t1105
+logsource:
+  category: file_creation
+  product: windows
+detection:
+  selection:
+    # Detects files created in a temp directory with a name starting with a tilde
+    TargetFilename|contains: '\Temp\~'
+    # And ending with the specific double extensions used by the dropper
+    TargetFilename|endswith:
+      - '.x.ps1'
+      - '.u.vbs'
+      - '.bb.php'
+  condition: selection
+falsepositives:
+  - Legitimate applications might create temporary files with similar naming conventions, although the specific double extensions are unusual.
+level: medium
