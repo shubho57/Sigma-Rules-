@@ -1,0 +1,40 @@
+title: Latrodectus Persistence and Execution Artifacts
+id: ec55478f-3f20-47ce-915f-b6a1da79ff16
+status: experimental
+description: Detects persistence and execution artifacts associated with the
+  Latrodectus malware. This includes the creation of a misspelled registry run
+  key ('sentinelssheduler') and the execution of a payload masquerading as
+  SentinelOne from a non-standard AppData path.
+references:
+  - https://medium.com/@shubhandrew/analysis-of-latrodectus-variant-msi-installer-966423f32e73
+author: Subhankar H.
+date: 2025-11-21
+tags:
+  - attack.persistence
+  - attack.t1547.001
+  - attack.execution
+  - attack.t1036.005
+  - attack.s1127
+logsource:
+  product: windows
+  category:
+    - registry_set
+    - process_creation
+detection:
+  selection_persistence:
+    category: registry_set # Detects the creation of a registry run key with a specific typo used by this malware variant.
+    TargetObject|contains|all:
+      - '\Software\Microsoft\Windows\CurrentVersion\Run'
+      - '\sentinelssheduler'
+    Details|contains: '\AppData\Roaming\SentinelOne\SentinelAgentWorker.exe'
+  selection_execution:
+    category: process_creation # Detects the execution of the masqueraded executable from a non-standard path.
+    Image|contains: '\AppData\Roaming\SentinelOne\SentinelAgentWorker.exe'
+  condition: 1 of them
+falsepositives:
+  - Other software coincidentally using the file name 'SentinelAgentWorker.exe'
+    and path structure '\AppData\Roaming\SentinelOne\' for legitimate purposes,
+    though highly unlikely.
+  - Legitimate SentinelOne agents running from the AppData folder (highly
+    unlikely as legitimate agents do not run from this location).
+level: high
