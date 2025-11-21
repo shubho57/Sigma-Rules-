@@ -1,0 +1,32 @@
+title: JavaScript Execution via WScript Spawning PowerShell
+id: 9df3d796-4d99-486a-b9fc-66f085b5eda5
+status: experimental
+description: Detects the execution of PowerShell by the Windows Script Host
+  (wscript.exe or cscript.exe). This behavior is often associated with malicious
+  JavaScript droppers that download and execute second-stage payloads, as seen
+  in the delivery of malware like NanoCore RAT.
+references:
+  - https://medium.com/@shubhandrew/analysis-of-a-javascript-file-in-which-a-malicious-network-ip-leads-to-nanocore-rat-3a71cb19c6fc
+author: Subhankar H.
+date: 2025-11-21
+tags:
+  - attack.execution
+  - attack.t1059.001
+  - attack.t1059.007
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection:
+    ParentImage|endswith:
+      # Parent process is the Windows Script Host, which executes .js files
+      - '\wscript.exe'
+      - '\cscript.exe'
+    Image|endswith: '\powershell.exe' # Child process is PowerShell, used for subsequent actions
+  condition: selection
+falsepositives:
+  - Legitimate administrative or automation scripts may use this execution
+    pattern. It is recommended to investigate the script being executed and the
+    PowerShell command line for further signs of malicious activity, such as
+    obfuscation or downloading content from the internet.
+level: medium
